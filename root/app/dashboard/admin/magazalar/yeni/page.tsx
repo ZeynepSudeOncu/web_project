@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
@@ -16,8 +16,32 @@ export default function YeniMagazaEkle() {
   const [phone, setPhone] = useState("");
   const [isActive, setIsActive] = useState(true);
 
+  // 👇 YENİ: depo state’leri
+  const [depots, setDepots] = useState<any[]>([]);
+  const [depotId, setDepotId] = useState("");
+
+  // 👇 Sayfa açılınca depoları çek
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    axios
+      .get("http://localhost:5144/api/depots", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => setDepots(res.data))
+      .catch((err) => console.error("Depolar alınamadı:", err));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 👇 ZORUNLU KONTROL
+    if (!depotId) {
+      alert("Lütfen bağlı olduğu depoyu seçin");
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -28,13 +52,14 @@ export default function YeniMagazaEkle() {
           name,
           address,
           phone,
-          isActive
+          isActive,
+          depotId, // 👈 EN KRİTİK SATIR
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -71,6 +96,24 @@ export default function YeniMagazaEkle() {
           onChange={(e) => setPhone(e.target.value)}
           required
         />
+
+        {/* 👇 BAĞLI DEPO SEÇİMİ */}
+        <div>
+          <label className="font-medium">Bağlı Depo</label>
+          <select
+            value={depotId}
+            onChange={(e) => setDepotId(e.target.value)}
+            className="border p-2 rounded w-full"
+            required
+          >
+            <option value="">Depo seçiniz</option>
+            {depots.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <select
           value={isActive ? "1" : "0"}
