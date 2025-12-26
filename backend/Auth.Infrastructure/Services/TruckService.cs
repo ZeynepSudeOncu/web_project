@@ -21,11 +21,14 @@ public class TruckService : ITruckService
         var trucks = await _context.Trucks
             .Where(t => t.IsActive)
             .Select(t => new TruckListResponse
-            {
-                Id = t.Id,
-                Plate = t.Plate,
-                IsAssigned = _context.Drivers.Any(d => d.TruckId == t.Id)
-            })
+{
+    Id = t.Id,
+    Plate = t.Plate,
+    Model = t.Model,
+    Capacity = t.Capacity,
+    IsAssigned = _context.Drivers.Any(d => d.TruckId == t.Id)
+})
+
             .ToListAsync();
 
         return trucks;
