@@ -35,19 +35,29 @@ export async function login({
 ========================= */
 export async function getProfile(): Promise<UserProfile> {
   const token = localStorage.getItem("token");
+  if (!token) throw new Error("Token bulunamadı");
 
-  if (!token) {
-    throw new Error("Token bulunamadı");
+  try {
+    const res = await api.get("/auth/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data as UserProfile;
+  } catch {
+    // 🔐 fallback: token decode
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    return {
+      email: payload.email,
+      roles: [
+        payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+      ],
+    };
   }
-
-  const res = await api.get("/auth/profile", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return res.data as UserProfile;
 }
+
 
 /* =========================
    ROLE → ROUTE MAP
@@ -63,9 +73,22 @@ export const roleRoutes: Record<Role, string> = {
    REDIRECT HELPER
 ========================= */
 export function redirectForProfile(profile: UserProfile): string {
-  const role = profile.roles[0]; // şu an tek rol varsayımı
-  return roleRoutes[role] ?? "/login";
+  const role = profile.roles[0];
+
+  switch (role) {
+    case "Depot":
+      return "/dashboard/depot/products"; // 🔥 direkt ürünler
+    case "Admin":
+      return "/dashboard/admin";
+    case "Store":
+      return "/dashboard/store";
+    case "Driver":
+      return "/dashboard/driver";
+    default:
+      return "/login";
+  }
 }
+
 
 /* =========================
    LOGOUT

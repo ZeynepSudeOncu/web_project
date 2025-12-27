@@ -1,35 +1,44 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Auth.Infrastructure.Logistics.Context;
-using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Api.Controllers;
 
+[Authorize(Roles = "Depot")]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/products")]
 public class ProductsController : ControllerBase
 {
-    private readonly LogisticsDbContext _db;
+    private readonly LogisticsDbContext _context;
 
-    public ProductsController(LogisticsDbContext db)
+    public ProductsController(LogisticsDbContext context)
     {
-        _db = db;
+        _context = context;
     }
 
-    [Authorize]
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMyProducts()
     {
-        var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-        var depotId = User.Claims.FirstOrDefault(c => c.Type == "DepotId")?.Value;
+        var depotIdStr = User.FindFirst("DepotId")?.Value;
 
-        var query = _db.Products.AsQueryable();
+        if (string.IsNullOrEmpty(depotIdStr))
+            return Unauthorized("Depot bilgisi token içinde yok.");
 
-        if (role == "Depot" && !string.IsNullOrEmpty(depotId))
-            query = query.Where(p => p.DepotId == depotId);
+        var DepotId = Guid.Parse(depotIdStr);
 
-        var products = await query.AsNoTracking().ToListAsync();
+        var products = await _context.Products
+            .Where(p => p.DepotId == DepotId)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.Code,
+                p.Quantity
+            })
+            .ToListAsync();
+
         return Ok(products);
     }
 }

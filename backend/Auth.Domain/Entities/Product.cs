@@ -2,11 +2,12 @@ namespace Auth.Domain.Entities;
 
 public class Product
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string Name { get; set; }
-    public string SKU { get; set; }
-    public string Category { get; set; }
-    public int Stock { get; set; }
-    public int MinStock { get; set; }
-    public string DepotId { get; set; }
+    public Guid Id { get; set; }
+    public string Name { get; set; } = default!;
+    public string Code { get; set; } = default!;
+    public int Quantity { get; set; }
+
+    public Guid DepotId { get; set; }
+    public Depot Depot { get; set; } = default!;
 }
+

@@ -96,7 +96,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 builder.Services.AddScoped<Auth.Application.Services.ITruckService, Auth.Infrastructure.Services.TruckService>();
 builder.Services.AddScoped<Auth.Application.Services.IOrderService, Auth.Infrastructure.Services.OrderService>();
-builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<Auth.Application.Abstractions.Services.IAuthService, Auth.Infrastructure.Services.Auth.AuthService>();
 
 
