@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/http";
 import ProductTable from "../../../../components/ProductTable";
 
-export default function StoreProductsPage() {
+export default function StoreProductPage() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {

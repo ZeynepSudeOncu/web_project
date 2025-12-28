@@ -20,6 +20,8 @@ public DbSet<Order> Orders { get; set; }
 public DbSet<Product> Products { get; set; }
 public DbSet<DepotProduct> DepotProducts { get; set; } // ✅ EKLENDİ
 public DbSet<StoreProduct> StoreProduct { get; set; } // (zaten entity var, DbSet de olmalı)
+public DbSet<StoreRequest> StoreRequests => Set<StoreRequest>();
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
