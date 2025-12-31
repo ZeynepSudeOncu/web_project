@@ -6,8 +6,9 @@ const menuItems = [
   { label: "Mağazalar", icon: <Building size={20} />, path: "/dashboard/admin/magazalar" },
   { label: "Kamyonlar", icon: <Truck size={20} />, path: "/dashboard/admin/kamyonlar" },
   { label: "Sürücüler", icon: <Users size={20} />, path: "/dashboard/admin/suruculer" },
-  { label: "Ürünler", icon: <Package size={20} />, path: "/dashboard/admin/urunler" },
+  { label: "Ürünler", icon: <Package size={20} />, path: "/dashboard/admin/products" },
   { label: "Teslimatlar", icon: <Package size={20} />, path: "/dashboard/admin/requests" },
+
 ];
 
 export default function Sidebar() {
