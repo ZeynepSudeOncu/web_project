@@ -70,4 +70,109 @@ public class AdminDashboardController : ControllerBase
             }
         });
     }
+
+    [HttpGet("critical-stocks")]
+    public async Task<IActionResult> GetCriticalStocks([FromQuery] int threshold = 5)
+    {
+        var depotStocks =
+            from dp in _context.DepotProducts
+            group dp by dp.ProductId into g
+            select new
+            {
+                ProductId = g.Key,
+                Quantity = g.Sum(x => x.Quantity)
+            };
+
+        var storeStocks =
+            from sp in _context.StoreProduct
+            group sp by sp.ProductId into g
+            select new
+            {
+                ProductId = g.Key,
+                Quantity = g.Sum(x => x.Quantity)
+            };
+
+        var merged =
+            from p in _context.Products
+            join ds in depotStocks on p.Id equals ds.ProductId into dsg
+            from ds in dsg.DefaultIfEmpty()
+            join ss in storeStocks on p.Id equals ss.ProductId into ssg
+            from ss in ssg.DefaultIfEmpty()
+            let total =
+                (ds != null ? ds.Quantity : 0) +
+                (ss != null ? ss.Quantity : 0)
+            where total < threshold
+            select new
+            {
+                productId = p.Id,
+                productName = p.Name,
+                productCode = p.Code,
+                totalQuantity = total
+            };
+
+        var list = await merged
+            .OrderBy(x => x.totalQuantity)
+            .ToListAsync();
+
+        return Ok(new
+        {
+            count = list.Count,
+            items = list
+        });
+    }
+
+[HttpGet("product-demand")]
+public async Task<IActionResult> GetProductDemand([FromQuery] int days = 7)
+{
+    var fromDate = DateTime.UtcNow.Date.AddDays(-days);
+
+    // En çok talep edilenler
+    var topProducts = await _context.StoreRequests
+        .Where(r => r.CreatedAt >= fromDate)
+        .GroupBy(r => r.ProductId)
+        .Select(g => new
+        {
+            ProductId = g.Key,
+            RequestCount = g.Count()
+        })
+        .OrderByDescending(x => x.RequestCount)
+        .Take(5)
+        .Join(
+            _context.Products,
+            g => g.ProductId,
+            p => p.Id,
+            (g, p) => new
+            {
+                productId = p.Id,
+                productName = p.Name,
+                productCode = p.Code,
+                requestCount = g.RequestCount
+            }
+        )
+        .ToListAsync();
+
+    // Hiç talep almayanlar
+    var requestedProductIds = await _context.StoreRequests
+        .Select(r => r.ProductId)
+        .Distinct()
+        .ToListAsync();
+
+    var neverRequested = await _context.Products
+        .Where(p => !requestedProductIds.Contains(p.Id))
+        .Select(p => new
+        {
+            productId = p.Id,
+            productName = p.Name,
+            productCode = p.Code
+        })
+        .ToListAsync();
+
+    return Ok(new
+    {
+        topProducts,
+        neverRequested
+    });
+}
+
+
 }
