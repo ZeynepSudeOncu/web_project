@@ -80,14 +80,14 @@ export default function AdminMagazaListesi() {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button
+                  {/* <Button
                     variant="outline"
                     onClick={() =>
                       router.push(`/dashboard/admin/magazalar/${magaza.id}` as unknown as Route)
                     }
                   >
                     Detay
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="secondary"
                     onClick={() =>

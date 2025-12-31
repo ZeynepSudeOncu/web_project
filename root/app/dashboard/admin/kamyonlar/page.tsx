@@ -99,7 +99,7 @@ export default function AdminKamyonListesi() {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button
+                  {/* <Button
                     variant="outline"
                     onClick={() =>
                       router.push(
@@ -108,7 +108,7 @@ export default function AdminKamyonListesi() {
                     }
                   >
                     Detay
-                  </Button>
+                  </Button> */}
 
                   <Button
                     variant="secondary"

@@ -111,26 +111,62 @@ public class DriversController : ControllerBase
     // PUT: api/drivers/{id}/assign-truck
     // =====================================================
     [HttpPut("{id:guid}/assign-truck")]
-    public async Task<IActionResult> AssignTruck(Guid id, [FromBody] AssignTruckRequest request)
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> AssignTruck(
+    Guid id,
+    [FromBody] AssignTruckRequest request)
+{
+    var driver = await _context.Drivers
+        .Include(d => d.Truck)
+        .FirstOrDefaultAsync(d => d.Id == id);
+
+    if (driver == null)
+        return NotFound("Sürücü bulunamadı");
+
+    // 1️⃣ Pasif sürücüye kamyon atanamaz
+    if (driver.Status == "Passive")
+        return BadRequest("Pasif sürücüye kamyon atanamaz");
+
+    // 2️⃣ Teslimattaki sürücünün kamyonu değiştirilemez
+    if (driver.Status == "OnDelivery")
+        return BadRequest("Teslimattaki sürücünün kamyonu değiştirilemez");
+
+    // 3️⃣ Kamyon kaldırma (null gönderilirse)
+    if (!request.TruckId.HasValue)
     {
-        var driver = await _context.Drivers.FirstOrDefaultAsync(d => d.Id == id);
-        if (driver == null)
-            return NotFound("Sürücü bulunamadı");
-
-        if (request.TruckId.HasValue)
-        {
-            var truckInUse = await _context.Drivers
-                .AnyAsync(d => d.TruckId == request.TruckId && d.Id != id);
-
-            if (truckInUse)
-                return BadRequest("Bu kamyon başka bir sürücüye atanmış.");
-        }
-
-        driver.TruckId = request.TruckId;
+        driver.TruckId = null;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Kamyon sürücüye başarıyla atandı." });
+        return Ok(new { message = "Kamyon sürücüden kaldırıldı." });
     }
+
+    // 4️⃣ Kamyon var mı?
+    var truckExists = await _context.Trucks
+        .AnyAsync(t => t.Id == request.TruckId.Value);
+
+    if (!truckExists)
+        return BadRequest("Kamyon bulunamadı");
+
+    // 5️⃣ Kamyon başka sürücüde mi?
+    var truckInUse = await _context.Drivers
+        .AnyAsync(d =>
+            d.TruckId == request.TruckId &&
+            d.Id != id);
+
+    if (truckInUse)
+        return BadRequest("Bu kamyon başka bir sürücüye atanmış");
+
+    // 6️⃣ Atama
+    driver.TruckId = request.TruckId;
+    await _context.SaveChangesAsync();
+
+    return Ok(new
+    {
+        message = "Kamyon sürücüye başarıyla atandı",
+        driverId = driver.Id,
+        truckId = driver.TruckId
+    });
+}
 
     // =====================================================
     // DELETE: api/drivers/{id}

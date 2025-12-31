@@ -59,8 +59,9 @@ export default function YeniSurucuPage() {
   value={status}
   onChange={(e) => setStatus(e.target.value)}
 >
-  <option value="Müsait">Müsait</option>
-  <option value="Yolda">Yolda</option>
+<option value="Active">Müsait</option>
+  <option value="OnDelivery">Yolda</option>
+  <option value="Passive">Pasif</option>
 </select>
 
 

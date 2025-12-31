@@ -51,6 +51,13 @@ export default function DepotLayout({
           >
             Talepler
           </button>
+          <button
+            className="block w-full text-left hover:text-gray-300"
+            onClick={() => router.push("/dashboard/depot/shipment")}
+          >
+            🚚 Sevkiyat
+          </button>
+
         </nav>
       </aside>
 
