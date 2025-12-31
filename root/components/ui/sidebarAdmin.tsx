@@ -2,6 +2,7 @@ import { Home, Building, Truck, Users, Package } from "lucide-react";
 import Link from "next/link";
 
 const menuItems = [
+  { label: "Anasayfa", icon: <Home size={20} />, path: "/dashboard/admin" },
   { label: "Depolar", icon: <Home size={20} />, path: "/dashboard/admin/depolar" },
   { label: "Mağazalar", icon: <Building size={20} />, path: "/dashboard/admin/magazalar" },
   { label: "Kamyonlar", icon: <Truck size={20} />, path: "/dashboard/admin/kamyonlar" },
