@@ -38,6 +38,7 @@ export default function DepotLayout({
         <h3 className="text-lg font-semibold">Depo Panel</h3>
 
         <nav className="space-y-2">
+
           <button
             className="block w-full text-left hover:text-gray-300"
             onClick={() => router.push("/dashboard/depot/products")}
